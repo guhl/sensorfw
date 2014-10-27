@@ -68,6 +68,7 @@ void HybrisProximityAdaptor::sendInitialData()
             }
             if (line.contains("proximity")) {
                 ok = true;
+		sensordLogD() << "Guhl: HybrisProximityAdaptor sendInitialData found proximity device\n";
             }
             line = in.readLine();
         }
@@ -82,9 +83,15 @@ void HybrisProximityAdaptor::sendInitialData()
         inputDev.replace("input","event");
         inputDev.prepend("/dev/input/");
 
+	sensordLogD() << "Guhl: HybrisProximityAdaptor sendInitialData inputDev.toLatin1()=" << inputDev.toLatin1() << "\n";
         if ((fd = open(inputDev.toLatin1(), O_RDONLY)) > 0) {
 
             if (!ioctl(fd, EVIOCGABS(ABS_DISTANCE), &absinfo)) {
+		sensordLogD() << "Guhl: HybrisProximityAdaptor sendInitialData absinfo.value=" << absinfo.value << "\n";
+		sensordLogD() << "Guhl: HybrisProximityAdaptor sendInitialData absinfo.minimum=" << absinfo.minimum << "\n";
+		sensordLogD() << "Guhl: HybrisProximityAdaptor sendInitialData absinfo.maximum=" << absinfo.maximum << "\n";
+		sensordLogD() << "Guhl: HybrisProximityAdaptor sendInitialData absinfo.fuzz=" << absinfo.fuzz << "\n";
+		sensordLogD() << "Guhl: HybrisProximityAdaptor sendInitialData absinfo.flat=" << absinfo.flat << "\n";
                 bool near = false;
                 if (absinfo.value == 0)
                     near = true;
@@ -119,8 +126,11 @@ void HybrisProximityAdaptor::processSample(const sensors_event_t& data)
     d->timestamp_ = quint64(data.timestamp * .0001);
     bool near = false;
 
+    sensordLogD() << "Guhl: HybrisProximityAdaptor processSample absinfo.value=" << data.distance << ", maxRange=" << maxRange << "\n";
     if (data.distance < maxRange) {
+    	sensordLogD() << "Guhl: HybrisProximityAdaptor processSample setting near=true.\n";
         near = true;
+//        near = false;
     }
     d->withinProximity_ = near;
     d->value_ = data.distance;
